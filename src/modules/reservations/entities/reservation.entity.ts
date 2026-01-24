@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "../../users/entities/user.entity";
-import { Session } from "inspector";
 import { Seat } from "../../seats/entities/seats.entity";
+import { Session } from "../../sessions/entities/session.entity";
 
 export enum ReservationStatus {
     PENDING = "pending",
