@@ -32,7 +32,7 @@ export class Seat {
     })
     status: SeatStatus;
 
-    @Column({ nullable: true })
+    @Column({ type: 'uuid', nullable: true })
     currentReservationId: string | null;
 
     @Column({ type: 'timestamp', nullable: true })
@@ -57,29 +57,27 @@ export class Seat {
     @OneToMany(() => Reservation, (reservation) => reservation.seat)
     reservations: Reservation[];
 
-    // Helper para identificação visual
+    // Helper para identificação visual (Ex: A1, B10)
     get seatIdentifier(): string {
         return `${this.rowLetter}${this.seatNumber}`;
     }
 
-    // Verificar se está disponível
+    // Verificar se está disponível logicamente
     isAvailable(): boolean {
-        // Se estiver bloqueado ou vendido, nunca está disponível
+        // Se estiver bloqueado manualmente ou já vendido, não está disponível
         if (this.isBlocked || this.status === SeatStatus.SOLD) {
             return false;
         }
 
-        // Se estiver reservado, verificamos se o tempo de reserva já expirou
+        // Se estiver reservado, verificamos se o tempo de reserva já expirou no servidor
         if (this.status === SeatStatus.RESERVED) {
-            // Se houver uma data de expiração e a hora atual for maior que ela, está disponível
             if (this.reservedUntil) {
+                // Se a data atual passou da data limite, o assento volta a ficar "disponível"
                 return new Date() > this.reservedUntil;
             }
-            // Se o status é reservado mas não tem data (null), assumimos que ainda está preso
             return false;
         }
 
-        // Caso padrão: disponível se o status for AVAILABLE
         return this.status === SeatStatus.AVAILABLE;
     }
 }

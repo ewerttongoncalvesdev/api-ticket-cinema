@@ -20,9 +20,6 @@ export enum PaymentStatus {
 @Index(['userId', 'createdAt'])
 @Index(['sessionId'])
 export class Sale {
-    price(price: any) {
-        throw new Error('Method not implemented.');
-    }
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
@@ -41,6 +38,10 @@ export class Sale {
     @Column({ length: 5 })
     seatIdentifier: string;
 
+    // Adicionado campo de preço para registrar o valor da venda
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    price: number;
+
     @Column({
         type: "enum",
         enum: PaymentMethod,
@@ -55,7 +56,7 @@ export class Sale {
     })
     paymentStatus: PaymentStatus;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     paymentId: string | null;
 
     @Column({ type: 'text', nullable: true })
@@ -70,6 +71,7 @@ export class Sale {
     @UpdateDateColumn()
     updatedAt: Date;
 
+    // Relações
     @ManyToOne(() => User, (user) => user.sales, {
         onDelete: 'CASCADE',
     })
