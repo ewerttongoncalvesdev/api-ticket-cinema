@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, Index, } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany, Index } from 'typeorm';
 import { Session } from '../../sessions/entities/session.entity';
 import { Reservation } from '../../reservations/entities/reservation.entity';
 
@@ -33,12 +33,11 @@ export class Seat {
     status: SeatStatus;
 
     @Column({ nullable: true })
-    currentReservationId: string;
+    currentReservationId: string | null;
 
     @Column({ type: 'timestamp', nullable: true })
-    reservedUntil: Date;
+    reservedUntil: Date | null;
 
-    // Para assentos em manutenção
     @Column({ default: false })
     isBlocked: boolean;
 
@@ -53,7 +52,7 @@ export class Seat {
         onDelete: 'CASCADE',
     })
     @JoinColumn({ name: 'sessionId' })
-    session: Session;
+    session: Session | null;
 
     @OneToMany(() => Reservation, (reservation) => reservation.seat)
     reservations: Reservation[];
@@ -65,14 +64,22 @@ export class Seat {
 
     // Verificar se está disponível
     isAvailable(): boolean {
+        // Se estiver bloqueado ou vendido, nunca está disponível
         if (this.isBlocked || this.status === SeatStatus.SOLD) {
             return false;
         }
 
-        if (this.status === SeatStatus.RESERVED && this.reservedUntil) {
-            return new Date() > this.reservedUntil;
+        // Se estiver reservado, verificamos se o tempo de reserva já expirou
+        if (this.status === SeatStatus.RESERVED) {
+            // Se houver uma data de expiração e a hora atual for maior que ela, está disponível
+            if (this.reservedUntil) {
+                return new Date() > this.reservedUntil;
+            }
+            // Se o status é reservado mas não tem data (null), assumimos que ainda está preso
+            return false;
         }
 
+        // Caso padrão: disponível se o status for AVAILABLE
         return this.status === SeatStatus.AVAILABLE;
     }
 }
