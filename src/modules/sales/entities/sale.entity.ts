@@ -20,6 +20,9 @@ export enum PaymentStatus {
 @Index(['userId', 'createdAt'])
 @Index(['sessionId'])
 export class Sale {
+    price(price: any) {
+        throw new Error('Method not implemented.');
+    }
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
