@@ -11,6 +11,11 @@ import { MessagingModule } from './modules/messaging/messaging.module';
 import { HealthModule } from './health/health.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import kakfkaConfig from './config/kakfka.config';
+import { SessionsModule } from './modules/sessions/sessions.module';
+import { SeatsModule } from './modules/seats/seats.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
+import { SalesModule } from './modules/sales/sales.module';
+import { UsersModule } from './modules/users/user.module';
 
 @Module({
   imports: [
@@ -24,8 +29,15 @@ import kakfkaConfig from './config/kakfka.config';
     CacheModule,
     MessagingModule,
     HealthModule,
+    
+    // Feature Modules
+    UsersModule,
+    SessionsModule,
+    SeatsModule,
+    ReservationsModule,
+    SalesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
