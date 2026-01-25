@@ -1,12 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
-
-export enum PaymentMethodDto {
-    CREDIT_CARD = 'credit_card',
-    DEBIT_CARD = 'debit_card',
-    PIX = 'pix',
-    CASH = 'cash',
-}
+// Você traz o Enum original para cá:
+import { PaymentMethod } from "../../sales/entities/sale.entity";
 
 export class ConfirmPaymentDto {
     @ApiProperty({
@@ -19,12 +14,13 @@ export class ConfirmPaymentDto {
 
     @ApiProperty({
         description: 'Método de pagamento',
-        enum: PaymentMethodDto,
-        example: PaymentMethodDto.CREDIT_CARD,
+        enum: PaymentMethod, // Usa o Enum da Entidade aqui no Swagger
+        example: PaymentMethod.CREDIT_CARD,
     })
-    @IsEnum(PaymentMethodDto, { message: 'Método de pagamento inválido' })
+    @IsEnum(PaymentMethod, { message: 'Método de pagamento inválido' })
     @IsNotEmpty({ message: 'Método de pagamento é obrigatório' })
-    paymentMethod: PaymentMethodDto;
+    // E usa ele aqui na tipagem:
+    paymentMethod: PaymentMethod;
 
     @ApiPropertyOptional({
         description: 'ID do pagamento externo (se aplicável)',

@@ -1,10 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Exclude, Expose } from "class-transformer";
 
-
 @Exclude()
 export class ReservationResponseDto {
-    @ApiProperty({ description: 'ID da reserva' })
+    @ApiProperty({ 
+        description: 'ID da reserva',
+        example: 'uuid-da-reserva' 
+    })
     @Expose()
     id: string;
 
@@ -16,21 +18,30 @@ export class ReservationResponseDto {
     @Expose()
     sessionId: string;
 
-    @ApiProperty({ description: ' ID do assento' })
+    @ApiProperty({ description: 'ID do assento' })
     @Expose()
     seatId: string;
 
-    @ApiProperty({ description: 'Status da reserva' })
+    @ApiProperty({ 
+        description: 'Status da reserva',
+        example: 'pending' 
+    })
     @Expose()
     status: string;
 
-    @ApiProperty({ description: 'Expiração da reserva em' })
+    @ApiProperty({ 
+        description: 'Expiração da reserva em',
+        nullable: true 
+    })
     @Expose()
-    expiresAt: Date;
+    expiresAt: Date | null;
 
-    @ApiProperty({ description: 'Tempo restante da reserva' })
+    @ApiProperty({ 
+        description: 'Tempo restante da reserva (segundos)',
+        example: 300 
+    })
     @Expose()
-    remainingTime: number;
+    remainingTime: number | null;
 
     @ApiProperty({ description: 'Data de criação da reserva' })
     @Expose()

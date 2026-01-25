@@ -2,7 +2,6 @@ import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, Primary
 import { User } from "../../users/entities/user.entity";
 import { Session } from "../../sessions/entities/session.entity";
 
-
 export enum PaymentMethod {
     CREDIT_CARD = "credit_card",
     DEBIT_CARD = "debit_card",
@@ -21,7 +20,6 @@ export enum PaymentStatus {
 @Index(['userId', 'createdAt'])
 @Index(['sessionId'])
 export class Sale {
-    [x: string]: any;
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
@@ -37,7 +35,6 @@ export class Sale {
     @Column()
     seatId: string;
 
-    // A1, B3, etc.
     @Column({ length: 5 })
     seatIdentifier: string;
 
@@ -56,13 +53,13 @@ export class Sale {
     paymentStatus: PaymentStatus;
 
     @Column({ nullable: true })
-    paynebtId: string;
+    paymentId: string | null;
 
     @Column({ type: 'text', nullable: true })
-    notes: string;
+    notes: string | null;
 
     @Column({ type: 'timestamp', nullable: true })
-    refudedAt: Date;
+    refundedAt: Date | null;
 
     @CreateDateColumn()
     createdAt: Date;
@@ -70,7 +67,6 @@ export class Sale {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    // Relações
     @ManyToOne(() => User, (user) => user.sales, {
         onDelete: 'CASCADE',
     })
@@ -82,5 +78,4 @@ export class Sale {
     })
     @JoinColumn({ name: 'sessionId' })
     session: Session;
-
 }
