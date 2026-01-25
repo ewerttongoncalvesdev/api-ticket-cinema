@@ -30,7 +30,6 @@ export class ReservationsService {
         private messagingService: MessagingService,
         private configService: ConfigService,
     ) {
-    
         this.reservationTimeout = this.configService.get<number>('app.reservationTimeoutSeconds') ?? 30;
     }
 
@@ -131,49 +130,38 @@ export class ReservationsService {
                     expiresAt: reservation.expiresAt,
                 });
 
-                this.logger.log(`Reserva criada: ${reservation.id} (expira em ${this.reservationTimeout}s)`);
-
                 return reservation;
             } finally {
                 await this.cacheService.releaseLock(lockKey);
             }
         }
 
-        throw new ConflictException(
-            'Não foi possível reservar o assento. Tente novamente.',
-        );
+        throw new ConflictException('Não foi possível reservar o assento. Tente novamente.');
     }
 
     async confirmPayment(confirmPaymentDto: ConfirmPaymentDto): Promise<Sale> {
-        // Garantindo que os campos do DTO existem antes de usar
         const { reservationId, paymentMethod, paymentId } = confirmPaymentDto;
 
         if (!reservationId || !paymentMethod || !paymentId) {
-            throw new BadRequestException('Dados de pagamento incompletos');
+            throw new BadRequestException('Dados de pagamento incompletos.');
         }
 
         return await this.dataSource.transaction(async (manager) => {
             const reservation = await manager.findOne(Reservation, {
                 where: { id: reservationId },
-                relations: ['seat', 'session'],
                 lock: { mode: 'pessimistic_write' },
             });
 
-            if (!reservation) {
-                throw new NotFoundException('Reserva não encontrada');
-            }
+            if (!reservation) throw new NotFoundException('Reserva não encontrada');
+            if (!reservation.canBeConfirmed()) throw new BadRequestException('Reserva expirada ou já confirmada');
 
-            if (!reservation.canBeConfirmed()) {
-                throw new BadRequestException('Reserva expirada ou já confirmada');
-            }
+            const seat = await manager.findOne(Seat, { where: { id: reservation.seatId } });
+            if (!seat) throw new NotFoundException('Assento não encontrado');
 
             reservation.status = ReservationStatus.CONFIRMED;
             reservation.confirmedAt = new Date();
             reservation.paymentId = paymentId;
             await manager.save(Reservation, reservation);
-
-            const seat = reservation.seat;
-            if (!seat) throw new NotFoundException('Assento não vinculado à reserva');
 
             seat.status = SeatStatus.SOLD;
             seat.currentReservationId = null;
@@ -227,32 +215,45 @@ export class ReservationsService {
 
     async expireReservation(reservationId: string): Promise<void> {
         await this.dataSource.transaction(async (manager) => {
+            // 1. Lock isolado da reserva
             const reservation = await manager.findOne(Reservation, {
                 where: { id: reservationId },
-                relations: ['seat'],
                 lock: { mode: 'pessimistic_write' },
             });
 
-            if (!reservation || reservation.status !== ReservationStatus.PENDING) {
+            // LOGS DE DEPURAÇÃO PARA ENTENDER O ROLLBACK
+            if (!reservation) {
+                this.logger.warn(`[EXPIRE] Reserva ${reservationId} não encontrada. Cancelando.`);
                 return;
             }
 
+            if (reservation.status !== ReservationStatus.PENDING) {
+                this.logger.warn(`[EXPIRE] Reserva ${reservationId} já possui status ${reservation.status}. Cancelando.`);
+                return;
+            }
+
+            // 2. Atualização dos status
             reservation.status = ReservationStatus.EXPIRED;
             await manager.save(Reservation, reservation);
 
-            const seat = reservation.seat;
+            const seat = await manager.findOne(Seat, { where: { id: reservation.seatId } });
             if (seat) {
                 seat.status = SeatStatus.AVAILABLE;
                 seat.currentReservationId = null;
                 seat.reservedUntil = null;
                 await manager.save(Seat, seat);
 
-                await this.messagingService.publishReservationExpired(reservationId, {
-                    seatId: seat.id,
-                });
+                try {
+                    await this.messagingService.publishReservationExpired(reservationId, {
+                        seatId: seat.id,
+                    });
+                } catch (msgError) {
+                    this.logger.error(`[EXPIRE] Erro ao notificar expiração: ${msgError.message}`);
+                   
+                }
             }
 
-            this.logger.log(`Reserva expirada: ${reservationId}`);
+            this.logger.log(`✅ Reserva ${reservationId} expirada com sucesso.`);
         });
     }
 

@@ -1,23 +1,23 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsNotEmpty, IsNumber, IsPositive, IsString, Max, Min } from "class-validator";
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Max, Min } from "class-validator";
 
 export class CreateSessionDto {
     @ApiProperty({
-        description: 'Titulo do filme',
-        example: 'Homem de ferro',
+        description: 'Título do filme',
+        example: 'Homem de Ferro 2',
     })
-
     @IsString({ message: 'O título do filme deve ser uma string' })
     @IsNotEmpty({ message: 'O título do filme é obrigatório' })
     movieTitle: string;
 
     @ApiProperty({
         description: 'Descrição do filme',
-        example: 'Um bilionário que se torna um super-herói usando uma armadura tecnológica.',
+        example: 'O bilionário Tony Stark deve lidar com a pressão do governo e novos inimigos.',
         required: false,
     })
+    @IsOptional() // Permite que o campo seja nulo ou não enviado
     @IsString({ message: 'A descrição do filme deve ser uma string' })
-    description?: string;
+    movieDescription?: string;
 
     @ApiProperty({
         description: 'Sala do cinema',

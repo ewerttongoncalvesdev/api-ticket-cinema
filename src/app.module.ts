@@ -16,6 +16,7 @@ import { SeatsModule } from './modules/seats/seats.module';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { UsersModule } from './modules/users/user.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { UsersModule } from './modules/users/user.module';
     SeatsModule,
     ReservationsModule,
     SalesModule,
+    SchedulerModule
   ],
   controllers: [AppController],
   providers: [AppService],

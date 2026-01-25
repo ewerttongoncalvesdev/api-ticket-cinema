@@ -25,6 +25,7 @@ export class CreateReservationDto {
     })
     @IsArray({ message: 'IDs dos assentos devem ser um array' })
     @ArrayMinSize(1, { message: 'Selecione pelo menos um assento' })
+    @IsNotEmpty({ message: 'A lista de assentos não pode estar vazia' })
     @IsUUID('4', { each: true, message: 'ID do assento inválido' })
     seatIds: string[];
 }

@@ -1,4 +1,11 @@
-import { Column, Entity, OneToMany, UpdateDateColumn, PrimaryGeneratedColumn, CreateDateColumn } from "typeorm";
+import { 
+  Column, 
+  Entity, 
+  OneToMany, 
+  UpdateDateColumn, 
+  PrimaryGeneratedColumn, 
+  CreateDateColumn 
+} from "typeorm";
 import { Reservation } from "../../reservations/entities/reservation.entity";
 import { Sale } from "../../sales/entities/sale.entity";
 
@@ -16,7 +23,7 @@ export class User {
     @Column()
     phone: string;
 
-    @Column()
+    @Column({ default: true })
     isActive: boolean;
 
     @CreateDateColumn()
@@ -31,5 +38,4 @@ export class User {
 
     @OneToMany(() => Sale, (sale) => sale.user)
     sales: Sale[];
-
 }

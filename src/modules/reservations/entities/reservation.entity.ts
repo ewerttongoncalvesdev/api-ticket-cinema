@@ -12,9 +12,8 @@ export enum ReservationStatus {
 
 @Entity("reservations")
 @Index(['userId', 'status'])
-@Index(['expireAt'])
+@Index(['expiresAt']) // Ajustado para plural
 export class Reservation {
-    [x: string]: any;
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
@@ -35,7 +34,7 @@ export class Reservation {
     status: ReservationStatus;
 
     @Column({ type: 'timestamp' })
-    expireAt: Date;
+    expiresAt: Date;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     price: number;
@@ -74,7 +73,7 @@ export class Reservation {
     @JoinColumn({ name: 'seatId' })
     seat: Seat;
 
-    // Helpers
+    // Helpers (já usavam expiresAt)
     isExpired(): boolean {
         return new Date() > this.expiresAt && this.status === ReservationStatus.PENDING;
     }
@@ -88,5 +87,4 @@ export class Reservation {
         const expiration = new Date(this.expiresAt);
         return Math.max(0, expiration.getTime() - now.getTime());
     }
-
 }
